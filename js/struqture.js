@@ -262,8 +262,8 @@ $(function() {
 		}
 	});
 	$('textarea').keypress(function(e) {
-		e.preventDefault();
 		if (e.which === 13) {
+			e.preventDefault();
 			$('.button').click();
 		}
 	});
