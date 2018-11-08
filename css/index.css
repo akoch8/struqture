@@ -1,0 +1,179 @@
+* {
+	margin: 0;
+	padding: 0;
+	border: none;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+header, section, footer, aside, nav, article, figure, figcaption {
+	display: block;
+}
+
+::selection {
+	background: #0d1117; /* WebKit/Blink Browsers */
+}
+::-moz-selection {
+	background: #0d1117; /* Gecko Browsers */
+}
+
+html, body {
+	background: #222831;
+	color: #a4abb7;
+	font: 16px/1.5 'Arial', sans-serif;
+	min-height: 100%;
+	width: 100%;
+}
+
+a {
+	color: inherit;
+	text-decoration: underline;
+}
+
+a:visited {
+	color: inherit;
+}
+
+a:active {
+	color: inherit;
+}
+
+header {
+	margin: 0 auto 1rem auto;
+	padding: 1rem 0;
+	text-align: center;
+}
+
+h1, h2 {
+	color: #667385;
+	font-family: 'Rajdhani', sans-serif;
+}
+
+h1 {
+	/*color: #424d5c;*/
+	font-size: 3rem;
+	font-weight: 300;
+	letter-spacing: 0.5em;
+	text-transform: uppercase;
+}
+
+h2 {
+	/*color: #424d5c;*/
+	font-size: 1.2rem;
+	font-weight: 300;
+	letter-spacing: 0.1em;
+}
+
+.focus-color {
+	color: #ff7657;
+	font-size: 1.5em;
+	font-weight: 600;
+	vertical-align: middle;
+}
+
+hr {
+	background: #424d5c;
+	border: none;
+	box-shadow: none;
+	height: 1px;
+	margin: 1rem auto;
+	max-width: 200px;
+	width: 30%;
+}
+
+main {
+	display: flex;
+	margin: 0 auto;
+	max-width: 960px;
+	width: 100%;
+}
+
+.column {
+	padding: 2rem 0;
+}
+
+.column--small {
+	flex: 1;
+}
+
+.column--wide {
+	flex: 2;
+}
+
+.input-container {
+	color: #eee;
+	margin: 0 auto;
+}
+
+textarea {
+	background: #424d5c;
+	border: 1px solid #424d5c;
+	box-shadow: none;
+	color: #eee;
+	display: block;
+	font: 16px/1.5 monospace;
+	letter-spacing: 0.1em;
+	margin: 0.5em auto;
+	max-height: 15em;
+	min-height: 5em;
+	padding: 0 0.5em;
+	resize: vertical;
+	text-transform: uppercase;
+	width: 100%;
+}
+
+textarea:focus {
+	background: #667385;
+	outline: none;
+}
+
+.button {
+	background: #ff7657;
+	color: #eee;
+	display: inline-block;
+	font-family: 'Rajdhani', sans-serif;
+	font-size: 1.2rem;
+	font-weight: 700;
+	letter-spacing: 0.2em;
+	padding: 0.25em 0.5em;
+	text-transform: uppercase;
+	user-select: none;
+}
+
+.button:hover {
+	cursor: pointer;
+}
+
+.button:active {
+	background: #e36346;
+}
+
+.svg-container {
+	text-align: center;
+}
+
+.alphabet-element {
+	font-family: 'Rajdhani', sans-serif;
+	font-size: 2rem;
+	font-weight: 900;
+}
+
+footer {
+	color: #424d5c;
+	font-family: 'Rajdhani', sans-serif;
+	margin: 0 auto 1rem auto;
+	padding: 1rem 0;
+	text-align: center;
+}
+
+@media only screen and (max-width: 768px){
+	main {
+		display: block;
+	}
+
+	.column {
+		display: block;
+		width: 96%;
+	}
+}
