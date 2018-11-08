@@ -258,6 +258,7 @@ $(function() {
 		var seq = $('textarea').val().toUpperCase();
 		seq = seq.replace(/[^ATCG]/g, '');
 		if (seq !== '') {
+			$('textarea').val(seq);
 			drawStructure(seq, alphabet, positions, width, height);
 		}
 	});
