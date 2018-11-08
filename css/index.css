@@ -114,9 +114,9 @@ textarea {
 	display: block;
 	font: 16px/1.5 monospace;
 	letter-spacing: 0.1em;
-	margin: 0.5em auto;
-	max-height: 15em;
-	min-height: 5em;
+	margin: 0.5em auto 1em auto;
+	max-height: 20em;
+	min-height: 10em;
 	padding: 0 0.5em;
 	resize: vertical;
 	text-transform: uppercase;
@@ -147,6 +147,24 @@ textarea:focus {
 
 .button:active {
 	background: #e36346;
+}
+
+.button--example {
+	background: #424d5c;
+}
+
+.button--example:active {
+	background: #667385;
+}
+
+.info {
+	color: #667385;
+	margin: 1em auto;
+	transition: opacity 200 linear;
+}
+
+.hidden {
+	opacity: 0;
 }
 
 .svg-container {

@@ -274,18 +274,25 @@ $(function() {
 		.attr('transform', 'rotate(8, ' + xLeft + ', ' + y + ')');
 
 	// User interactions.
-	$('.button').on('click', function() {
+	$('.button--plot').on('click', function() {
 		var seq = $('textarea').val().toUpperCase();
 		seq = seq.replace(/[^ATCG]/g, '');
 		if (seq !== '') {
 			$('textarea').val(seq);
+			$('.info').fadeTo(0, 0);
 			drawStructure(seq, alphabet, positions, width, height);
 		}
+	});
+	$('.button--example').on('click', function() {
+		var seq = 'GGAGGGGAGAGACTCGCGCTCCGGGCTCAGCGTAGCCGCCCCGAGCAGGACCGGGATTCTCACTAAGCGGGCGCCGTCCTACGACCCCCGCGCGCTTTCAGGACCACTCGGGCACGTGGCAGGTCGCTTGCACGCCCGCGGACTATCCCTGTGACAGGAAAAGGTACGGGCCATTTGGCAAACTAAGGCACAGAGCCTCAGGCGGAAGCTGGGAAGGCGCCGCCCGGCTTGTACCGGCCGAAGGGCCATCCGGGTCAGGCGCACAGGGCAGCGGCGCTGCCGGAGGACCAGGGCCGGCGTGCCGGCGTCCAGCGAGGATGCGCAGACTGCCTCAGGCCCGGCGCCGCCGCACAGGGCATGCGCCGACCCGGTCGGGCGGGAACACCCCGCCCCTCCCGGGCTCCGCCCCAGCTCCGCCCCCGCGCGCCCCGGCCCCGCCCCCGCGCGCTCTCTTGCTTTTCTCAGGTCCTCGGCTCCGCCCCGCTCTAGACCCCGCCCCACGCCGCCATCCCCGTGCCCCTCGGCCCCGCCCCCGCGCCCCGGATATGCTGGGACAGCCCGCGCCCCTAGAACGCTTTGCGTCCCGACGCCCGCAGGTCCTCGCGGTGCGCACCGTTTGCGACTTGGTGAGTGTCTGGG';
+		$('textarea').val(seq);
+		$('.info').fadeTo(200, 1);
+		drawStructure(seq, alphabet, positions, width, height);
 	});
 	$('textarea').keypress(function(e) {
 		if (e.which === 13) {
 			e.preventDefault();
-			$('.button').click();
+			$('.button--plot').click();
 		}
 	});
 });
