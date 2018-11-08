@@ -2,7 +2,7 @@ var bgColor = '#222831';
 var strokeColor = '#ff7657';
 var strokeColorBg = '#424d5c';
 
-var drawStructure = function(seq, alphabet, positions, width, height) {
+var drawStructure = function(seq, alphabet, positions, width, height, radius, margin) {
 	// Draw the structure of a given input sequence.
 	$('.alphabet-element').remove();
 	$('.struqture-element').remove();
@@ -17,6 +17,7 @@ var drawStructure = function(seq, alphabet, positions, width, height) {
 		}
 	}
 	var baseWidth = 1;
+	var dist;
 	$.each(connectionCounts, function(key, value) {
 		// Redraw the links between the alphabet elements, but adjust the line width by the
 		// frequency of each link.
@@ -28,9 +29,11 @@ var drawStructure = function(seq, alphabet, positions, width, height) {
 		var endPoint = [positions[connectionEnd][0], positions[connectionEnd][1]];
 		var midpoint = findMidpoint(startPoint, endPoint);
 		if (connectionStart !== connectionEnd) {
-			var dist = 60;
+			//dist = 60;
+			dist = Math.round(radius / 3);
 			if (alphabet.indexOf(connectionStart) > alphabet.indexOf(connectionEnd)) {
-				dist = -60;
+				//dist = -60;
+				dist = -dist;
 			}
 			var controlPoint = findControlPoint(startPoint, endPoint, midpoint, dist);
 			svg.append('path')
@@ -46,8 +49,9 @@ var drawStructure = function(seq, alphabet, positions, width, height) {
 			// the plot's origin and the link start using vectors. See
 			// https://math.stackexchange.com/a/175906 for a detailed explanation of the vector
 			// math involved.
+			dist = Math.round(radius / 3);
 			var x0 = width / 2;
-			var y0 = height / 2;
+			var y0 = height / 2 + margin.top / 2;
 			var x1 = startPoint[0];
 			var y1 = startPoint[1];
 			var xVector = x1 - x0;
@@ -55,12 +59,12 @@ var drawStructure = function(seq, alphabet, positions, width, height) {
 			var normalizer = Math.sqrt(Math.pow(xVector, 2) + Math.pow(yVector, 2));
 			xVector /= normalizer;
 			yVector /= normalizer;
-			var xCircle = x1 + 40 * xVector;
-			var yCircle = y1 + 40 * yVector;
+			var xCircle = x1 + dist * xVector;
+			var yCircle = y1 + dist * yVector;
 			svg.append('circle')
 				.attr('cx', xCircle)
 				.attr('cy', yCircle)
-				.attr('r', 40)
+				.attr('r', dist)
 				.attr('stroke', strokeColor)
 				.attr('stroke-width', strokeWidth)
 				.attr('fill', 'none')
@@ -144,11 +148,13 @@ $(function() {
 	var alphabet = ['A', 'T', 'C', 'G'];
 	var width = $('.svg-container').width();
 	var height = width;
-	var radius = 180;
+	var radius = Math.round(width * 0.28);
+	var margin = {top: 40, right: 0, left: 0, bottom: 0};
+	console.log('radius = ' + radius);
 	svg = d3.select('.svg-container')
 		.append('svg')
 			.attr('width', width)
-			.attr('height', height)
+			.attr('height', height + margin.top)
 			.attr('text-rendering', 'geometricPrecision')
 			.attr('font-family', 'arial')
 			.attr('font-size', '12px')
@@ -162,21 +168,24 @@ $(function() {
 		var xPos = radius * Math.cos(angle);
 		var yPos = radius * Math.sin(angle);
 		xPos = Math.round(xPos * 10) / 10 + width / 2;
-		yPos = Math.round(yPos * 10) / 10 + height / 2;
+		yPos = Math.round(yPos * 10) / 10 + height / 2 + margin.top;
 		positions[value] = [xPos, yPos];
 	});
 
 	// Generate a background image that shows all the possible pairwise connections between the
 	// alphabet elements.
 	var connections = getConnections(alphabet);
+	var dist;
 	$.each(connections, function(index, value) {
 		var startPoint = [positions[value.start][0], positions[value.start][1]];
 		var endPoint = [positions[value.end][0], positions[value.end][1]];
 		var midpoint = findMidpoint(startPoint, endPoint);
 		if (value.start !== value.end) {
-			var dist = 60;
+			//var dist = 60;
+			dist = Math.round(radius / 3);
 			if (alphabet.indexOf(value.start) > alphabet.indexOf(value.end)) {
-				dist = -60;
+				//dist = -60;
+				dist = -dist;
 			}
 			var controlPoint = findControlPoint(startPoint, endPoint, midpoint, dist);
 			svg.append('path')
@@ -197,8 +206,9 @@ $(function() {
 			// the plot's origin and the link start using vectors. See
 			// https://math.stackexchange.com/a/175906 for a detailed explanation of the vector
 			// math involved.
+			dist = Math.round(radius / 3);
 			var x0 = width / 2;
-			var y0 = height / 2;
+			var y0 = height / 2 + margin.top / 2;
 			var x1 = startPoint[0];
 			var y1 = startPoint[1];
 			var xVector = x1 - x0;
@@ -206,12 +216,12 @@ $(function() {
 			var normalizer = Math.sqrt(Math.pow(xVector, 2) + Math.pow(yVector, 2));
 			xVector /= normalizer;
 			yVector /= normalizer;
-			var xCircle = x1 + 40 * xVector;
-			var yCircle = y1 + 40 * yVector;
+			var xCircle = x1 + dist * xVector;
+			var yCircle = y1 + dist * yVector;
 			svg.append('circle')
 				.attr('cx', xCircle)
 				.attr('cy', yCircle)
-				.attr('r', 40)
+				.attr('r', dist)
 				.attr('stroke', strokeColorBg)
 				.attr('fill', 'none');
 		}
@@ -280,14 +290,14 @@ $(function() {
 		if (seq !== '') {
 			$('textarea').val(seq);
 			$('.info').fadeTo(0, 0);
-			drawStructure(seq, alphabet, positions, width, height);
+			drawStructure(seq, alphabet, positions, width, height, radius, margin);
 		}
 	});
 	$('.button--example').on('click', function() {
 		var seq = 'GGAGGGGAGAGACTCGCGCTCCGGGCTCAGCGTAGCCGCCCCGAGCAGGACCGGGATTCTCACTAAGCGGGCGCCGTCCTACGACCCCCGCGCGCTTTCAGGACCACTCGGGCACGTGGCAGGTCGCTTGCACGCCCGCGGACTATCCCTGTGACAGGAAAAGGTACGGGCCATTTGGCAAACTAAGGCACAGAGCCTCAGGCGGAAGCTGGGAAGGCGCCGCCCGGCTTGTACCGGCCGAAGGGCCATCCGGGTCAGGCGCACAGGGCAGCGGCGCTGCCGGAGGACCAGGGCCGGCGTGCCGGCGTCCAGCGAGGATGCGCAGACTGCCTCAGGCCCGGCGCCGCCGCACAGGGCATGCGCCGACCCGGTCGGGCGGGAACACCCCGCCCCTCCCGGGCTCCGCCCCAGCTCCGCCCCCGCGCGCCCCGGCCCCGCCCCCGCGCGCTCTCTTGCTTTTCTCAGGTCCTCGGCTCCGCCCCGCTCTAGACCCCGCCCCACGCCGCCATCCCCGTGCCCCTCGGCCCCGCCCCCGCGCCCCGGATATGCTGGGACAGCCCGCGCCCCTAGAACGCTTTGCGTCCCGACGCCCGCAGGTCCTCGCGGTGCGCACCGTTTGCGACTTGGTGAGTGTCTGGG';
 		$('textarea').val(seq);
 		$('.info').fadeTo(200, 1);
-		drawStructure(seq, alphabet, positions, width, height);
+		drawStructure(seq, alphabet, positions, width, height, radius, margin);
 	});
 	$('textarea').keypress(function(e) {
 		if (e.which === 13) {
