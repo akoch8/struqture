@@ -2,6 +2,100 @@ var bgColor = '#222831';
 var strokeColor = '#ff7657';
 var strokeColorBg = '#424d5c';
 
+var calculatePositions = function(alphabet, width, height, radius, margin) {
+	// Place the alphabet elements on a circle around the center of the SVG and calculate their
+	// coordinates.
+	var positions = {};
+	$.each(alphabet, function(index, value) {
+		var angle = index / (alphabet.length / 2) * Math.PI - (alphabet.length - 1) / alphabet.length * Math.PI;
+		var xPos = radius * Math.cos(angle);
+		var yPos = radius * Math.sin(angle);
+		xPos = Math.round(xPos * 10) / 10 + width / 2;
+		yPos = Math.round(yPos * 10) / 10 + height / 2 + margin.top;
+		positions[value] = [xPos, yPos];
+	});
+	return positions;
+};
+
+var drawBackground = function(seq, alphabet, positions, width, height, radius, margin) {
+	// Generate a background image that shows all the possible pairwise connections between the
+	// alphabet elements.
+	$('.background-element').remove();
+	var connections = getConnections(alphabet);
+	var dist;
+	$.each(connections, function(index, value) {
+		var startPoint = [positions[value.start][0], positions[value.start][1]];
+		var endPoint = [positions[value.end][0], positions[value.end][1]];
+		var midpoint = findMidpoint(startPoint, endPoint);
+		if (value.start !== value.end) {
+			//var dist = 60;
+			dist = Math.round(radius / 3);
+			if (alphabet.indexOf(value.start) > alphabet.indexOf(value.end)) {
+				//dist = -60;
+				dist = -dist;
+			}
+			var controlPoint = findControlPoint(startPoint, endPoint, midpoint, dist);
+			svg.append('path')
+				.attr('class', 'background-element')
+				.attr('d', 'M' + startPoint[0] + ',' + startPoint[1] +
+					' Q' + controlPoint[0] + ',' + controlPoint[1] +
+					' ' + endPoint[0] + ',' + endPoint[1])
+				.attr('stroke', strokeColorBg)
+				.attr('fill', 'none');
+			
+			// Show the control point.
+			/*svg.append('circle')
+				.attr('cx', controlPoint[0])
+				.attr('cy', controlPoint[1])
+				.attr('r', 5)
+				.attr('fill', '#00ff00');*/
+		} else {
+			// Move the circle that visualizes self-links (e.g. AA) outwards along the line between
+			// the plot's origin and the link start using vectors. See
+			// https://math.stackexchange.com/a/175906 for a detailed explanation of the vector
+			// math involved.
+			dist = Math.round(radius / 3);
+			var x0 = width / 2;
+			var y0 = height / 2 + margin.top / 2;
+			var x1 = startPoint[0];
+			var y1 = startPoint[1];
+			var xVector = x1 - x0;
+			var yVector = y1 - y0;
+			var normalizer = Math.sqrt(Math.pow(xVector, 2) + Math.pow(yVector, 2));
+			xVector /= normalizer;
+			yVector /= normalizer;
+			var xCircle = x1 + dist * xVector;
+			var yCircle = y1 + dist * yVector;
+			svg.append('circle')
+				.attr('cx', xCircle)
+				.attr('cy', yCircle)
+				.attr('r', dist)
+				.attr('class', 'background-element')
+				.attr('stroke', strokeColorBg)
+				.attr('fill', 'none');
+		}
+	});
+
+	// Add the alphabet elements on top (including a background circle to improve legibility).
+	$.each(positions, function(key, value) {
+		svg.append('circle')
+			.attr('cx', value[0])
+			.attr('cy', value[1])
+			.attr('r', 25)
+			.attr('fill', bgColor)
+			.attr('stroke', 'none')
+			.attr('class', 'background-element');
+		svg.append('text')
+			.attr('x', value[0])
+			.attr('y', value[1])
+			.attr('text-anchor', 'middle')
+			.attr('alignment-baseline', 'middle')
+			.attr('class', 'background-element')
+			.attr('id', key)
+			.text(key);
+	});
+};
+
 var drawStructure = function(seq, alphabet, positions, width, height, radius, margin) {
 	// Draw the structure of a given input sequence.
 	$('.alphabet-element').remove();
@@ -144,13 +238,18 @@ var slope = function(a, b) {
 	}
 };
 
+var uniqueValues = function(value, index, self) {
+	// This function returns the unique values in an array and was adapted from
+	// https://stackoverflow.com/a/14438954
+	return self.indexOf(value) === index;
+};
+
 $(function() {
 	var alphabet = ['A', 'T', 'C', 'G'];
 	var width = $('.svg-container').width();
 	var height = width;
 	var radius = Math.round(width * 0.28);
-	var margin = {top: 40, right: 0, left: 0, bottom: 0};
-	console.log('radius = ' + radius);
+	var margin = {top: 60, right: 0, left: 0, bottom: 0};
 	svg = d3.select('.svg-container')
 		.append('svg')
 			.attr('width', width)
@@ -159,92 +258,6 @@ $(function() {
 			.attr('font-family', 'arial')
 			.attr('font-size', '12px')
 			.attr('fill', '#eee');
-
-	// Place the alphabet elements on a circle around the center of the SVG and calculate their
-	// coordinates.
-	var positions = {};
-	$.each(alphabet, function(index, value) {
-		var angle = index / (alphabet.length / 2) * Math.PI - 3 / 4 * Math.PI;
-		var xPos = radius * Math.cos(angle);
-		var yPos = radius * Math.sin(angle);
-		xPos = Math.round(xPos * 10) / 10 + width / 2;
-		yPos = Math.round(yPos * 10) / 10 + height / 2 + margin.top;
-		positions[value] = [xPos, yPos];
-	});
-
-	// Generate a background image that shows all the possible pairwise connections between the
-	// alphabet elements.
-	var connections = getConnections(alphabet);
-	var dist;
-	$.each(connections, function(index, value) {
-		var startPoint = [positions[value.start][0], positions[value.start][1]];
-		var endPoint = [positions[value.end][0], positions[value.end][1]];
-		var midpoint = findMidpoint(startPoint, endPoint);
-		if (value.start !== value.end) {
-			//var dist = 60;
-			dist = Math.round(radius / 3);
-			if (alphabet.indexOf(value.start) > alphabet.indexOf(value.end)) {
-				//dist = -60;
-				dist = -dist;
-			}
-			var controlPoint = findControlPoint(startPoint, endPoint, midpoint, dist);
-			svg.append('path')
-				.attr('d', 'M' + startPoint[0] + ',' + startPoint[1] +
-					' Q' + controlPoint[0] + ',' + controlPoint[1] +
-					' ' + endPoint[0] + ',' + endPoint[1])
-				.attr('stroke', strokeColorBg)
-				.attr('fill', 'none');
-			
-			// Show the control point.
-			/*svg.append('circle')
-				.attr('cx', controlPoint[0])
-				.attr('cy', controlPoint[1])
-				.attr('r', 5)
-				.attr('fill', '#00ff00');*/
-		} else {
-			// Move the circle that visualizes self-links (e.g. AA) outwards along the line between
-			// the plot's origin and the link start using vectors. See
-			// https://math.stackexchange.com/a/175906 for a detailed explanation of the vector
-			// math involved.
-			dist = Math.round(radius / 3);
-			var x0 = width / 2;
-			var y0 = height / 2 + margin.top / 2;
-			var x1 = startPoint[0];
-			var y1 = startPoint[1];
-			var xVector = x1 - x0;
-			var yVector = y1 - y0;
-			var normalizer = Math.sqrt(Math.pow(xVector, 2) + Math.pow(yVector, 2));
-			xVector /= normalizer;
-			yVector /= normalizer;
-			var xCircle = x1 + dist * xVector;
-			var yCircle = y1 + dist * yVector;
-			svg.append('circle')
-				.attr('cx', xCircle)
-				.attr('cy', yCircle)
-				.attr('r', dist)
-				.attr('stroke', strokeColorBg)
-				.attr('fill', 'none');
-		}
-	});
-
-	// Add the alphabet elements on top (including a background circle to improve legibility).
-	$.each(positions, function(key, value) {
-		svg.append('circle')
-			.attr('cx', value[0])
-			.attr('cy', value[1])
-			.attr('r', 25)
-			.attr('fill', bgColor)
-			.attr('stroke', 'none')
-			.attr('class', 'alphabet-element');
-		svg.append('text')
-			.attr('x', value[0])
-			.attr('y', value[1])
-			.attr('text-anchor', 'middle')
-			.attr('alignment-baseline', 'middle')
-			.attr('class', 'alphabet-element')
-			.attr('id', key)
-			.text(key);
-	});
 
 	// Add arrows at the top of the figure to indicate the direction of the links.
 	var xLeft = Math.round(width / 2 - 20);
@@ -284,12 +297,21 @@ $(function() {
 		.attr('transform', 'rotate(8, ' + xLeft + ', ' + y + ')');
 
 	// User interactions.
+	var positions;
 	$('.button--plot').on('click', function() {
 		var seq = $('textarea').val().toUpperCase();
-		seq = seq.replace(/[^ATCG]/g, '');
+		seq = seq.replace(/[^A-Z]/g, '');
 		if (seq !== '') {
+			alphabet = seq.split('').filter(uniqueValues).sort();
+			if (alphabet.length > 8) {
+				alphabet = alphabet.slice(0, 8);
+				seq = seq.split('').filter(function(x) {
+					return alphabet.indexOf(x) > -1;
+				}).join('');
+			}
 			$('textarea').val(seq);
-			$('.info').fadeTo(0, 0);
+			positions = calculatePositions(alphabet, width, height, radius, margin);
+			drawBackground(seq, alphabet, positions, width, height, radius, margin);
 			drawStructure(seq, alphabet, positions, width, height, radius, margin);
 		}
 	});
@@ -297,7 +319,7 @@ $(function() {
 		var seq = 'GGAGGGGAGAGACTCGCGCTCCGGGCTCAGCGTAGCCGCCCCGAGCAGGACCGGGATTCTCACTAAGCGGGCGCCGTCCTACGACCCCCGCGCGCTTTCAGGACCACTCGGGCACGTGGCAGGTCGCTTGCACGCCCGCGGACTATCCCTGTGACAGGAAAAGGTACGGGCCATTTGGCAAACTAAGGCACAGAGCCTCAGGCGGAAGCTGGGAAGGCGCCGCCCGGCTTGTACCGGCCGAAGGGCCATCCGGGTCAGGCGCACAGGGCAGCGGCGCTGCCGGAGGACCAGGGCCGGCGTGCCGGCGTCCAGCGAGGATGCGCAGACTGCCTCAGGCCCGGCGCCGCCGCACAGGGCATGCGCCGACCCGGTCGGGCGGGAACACCCCGCCCCTCCCGGGCTCCGCCCCAGCTCCGCCCCCGCGCGCCCCGGCCCCGCCCCCGCGCGCTCTCTTGCTTTTCTCAGGTCCTCGGCTCCGCCCCGCTCTAGACCCCGCCCCACGCCGCCATCCCCGTGCCCCTCGGCCCCGCCCCCGCGCCCCGGATATGCTGGGACAGCCCGCGCCCCTAGAACGCTTTGCGTCCCGACGCCCGCAGGTCCTCGCGGTGCGCACCGTTTGCGACTTGGTGAGTGTCTGGG';
 		$('textarea').val(seq);
 		$('.info').fadeTo(200, 1);
-		drawStructure(seq, alphabet, positions, width, height, radius, margin);
+		$('.button--plot').click();
 	});
 	$('textarea').keypress(function(e) {
 		if (e.which === 13) {
