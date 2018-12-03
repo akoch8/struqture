@@ -2,6 +2,24 @@ var bgColor = '#222831';
 var strokeColor = '#ff7657';
 var strokeColorBg = '#424d5c';
 
+var calculateFrequencies = function(seq) {
+	var frequencyList = $('#nucleotide-frequencies > ul');
+	frequencyList.empty();
+	var seqElements = seq.split('').filter(uniqueValues);
+	seqElements.sort();
+	frequencyList.append('<li>Sequence length = ' + seq.length +
+		'<div class="frequency-bar--total"></div></li>');
+	var width = $('#nucleotide-frequencies').width();
+	$.each(seqElements, function(i, v) {
+		var re = new RegExp('[^' + v + ']', 'g');
+		var elCount = seq.replace(re, '').length;
+		var elFreq = Math.round(elCount / seq.length * 10000) / 100;
+		var elWidth = Math.round(elFreq / 100 * width);
+		frequencyList.append('<li>' + v + ': ' + elCount + '/' + seq.length + ' (' + elFreq +
+			'%)<div class="frequency-bar" style="width: ' + elWidth + 'px"></div></li>');
+	});
+};
+
 var calculatePositions = function(alphabet, width, height, radius, margin) {
 	// Place the alphabet elements on a circle around the center of the SVG and calculate their
 	// coordinates.
@@ -245,7 +263,11 @@ var uniqueValues = function(value, index, self) {
 };
 
 $(function() {
-	var alphabet = ['A', 'T', 'C', 'G'];
+	// See https://www.bioinformatics.org/sms/iupac.html for a overview of the IUPAC nucleotide
+	// code. For struqture, we'll stick to the most common characters.
+	var alphabet = ['A', 'T', 'C', 'G', 'U', 'R', 'Y', 'N'];
+
+	// Create the SVG.
 	var width = $('.svg-container').width();
 	var height = width;
 	var radius = Math.round(width * 0.28);
@@ -260,9 +282,10 @@ $(function() {
 			.attr('fill', '#eee');
 
 	// Add arrows at the top of the figure to indicate the direction of the links.
-	var xLeft = Math.round(width / 2 - 20);
+	var arrowLength = 40;
+	var xLeft = Math.round(width / 2 - arrowLength / 2);
 	var xMiddle = Math.round(width / 2);
-	var xRight = Math.round(width / 2 + 20);
+	var xRight = Math.round(width / 2 + arrowLength / 2);
 	var y = 40;
 	svg.append('path')
 		.attr('d', 'M' + xLeft + ',' + y +
@@ -300,23 +323,30 @@ $(function() {
 	var positions;
 	$('.button--plot').on('click', function() {
 		var seq = $('textarea').val().toUpperCase();
-		seq = seq.replace(/[^A-Z]/g, '');
+
+		// Remove the characters that are not in the nucleotide alphabet.
+		seq = seq.split('').filter(function(x) {
+			return alphabet.indexOf(x) > -1;
+		}).join('');
 		if (seq !== '') {
-			alphabet = seq.split('').filter(uniqueValues).sort();
-			if (alphabet.length > 8) {
-				alphabet = alphabet.slice(0, 8);
-				seq = seq.split('').filter(function(x) {
-					return alphabet.indexOf(x) > -1;
-				}).join('');
-			}
+			// Generate an input-specific alphabet. We don't want to show characters that are not
+			// present in the input sequence.
+			var seqAlphabet = alphabet.filter(function(x) {
+				return seq.indexOf(x) > -1;
+			});
 			$('textarea').val(seq);
-			positions = calculatePositions(alphabet, width, height, radius, margin);
-			drawBackground(seq, alphabet, positions, width, height, radius, margin);
-			drawStructure(seq, alphabet, positions, width, height, radius, margin);
+			positions = calculatePositions(seqAlphabet, width, height, radius, margin);
+			drawBackground(seq, seqAlphabet, positions, width, height, radius, margin);
+			drawStructure(seq, seqAlphabet, positions, width, height, radius, margin);
+			calculateFrequencies(seq);
 		}
 	});
 	$('.button--example').on('click', function() {
-		var seq = 'GGAGGGGAGAGACTCGCGCTCCGGGCTCAGCGTAGCCGCCCCGAGCAGGACCGGGATTCTCACTAAGCGGGCGCCGTCCTACGACCCCCGCGCGCTTTCAGGACCACTCGGGCACGTGGCAGGTCGCTTGCACGCCCGCGGACTATCCCTGTGACAGGAAAAGGTACGGGCCATTTGGCAAACTAAGGCACAGAGCCTCAGGCGGAAGCTGGGAAGGCGCCGCCCGGCTTGTACCGGCCGAAGGGCCATCCGGGTCAGGCGCACAGGGCAGCGGCGCTGCCGGAGGACCAGGGCCGGCGTGCCGGCGTCCAGCGAGGATGCGCAGACTGCCTCAGGCCCGGCGCCGCCGCACAGGGCATGCGCCGACCCGGTCGGGCGGGAACACCCCGCCCCTCCCGGGCTCCGCCCCAGCTCCGCCCCCGCGCGCCCCGGCCCCGCCCCCGCGCGCTCTCTTGCTTTTCTCAGGTCCTCGGCTCCGCCCCGCTCTAGACCCCGCCCCACGCCGCCATCCCCGTGCCCCTCGGCCCCGCCCCCGCGCCCCGGATATGCTGGGACAGCCCGCGCCCCTAGAACGCTTTGCGTCCCGACGCCCGCAGGTCCTCGCGGTGCGCACCGTTTGCGACTTGGTGAGTGTCTGGG';
+		// Give the user an example sequence. In this case the example sequence is the CpG rich
+		// region around the transcription start site of MGMT. The sequence can be downloaded from
+		// the Ensembl API using this URL:
+		// https://rest.ensembl.org/sequence/region/human/chr10:129466800..129467400:1?content-type=text/plain;coord_system_version=GRCh38
+		var seq = 'GCACGCCCGCGGACTATCCCTGTGACAGGAAAAGGTACGGGCCATTTGGCAAACTAAGGCACAGAGCCTCAGGCGGAAGCTGGGAAGGCGCCGCCCGGCTTGTACCGGCCGAAGGGCCATCCGGGTCAGGCGCACAGGGCAGCGGCGCTGCCGGAGGACCAGGGCCGGCGTGCCGGCGTCCAGCGAGGATGCGCAGACTGCCTCAGGCCCGGCGCCGCCGCACAGGGCATGCGCCGACCCGGTCGGGCGGGAACACCCCGCCCCTCCCGGGCTCCGCCCCAGCTCCGCCCCCGCGCGCCCCGGCCCCGCCCCCGCGCGCTCTCTTGCTTTTCTCAGGTCCTCGGCTCCGCCCCGCTCTAGACCCCGCCCCACGCCGCCATCCCCGTGCCCCTCGGCCCCGCCCCCGCGCCCCGGATATGCTGGGACAGCCCGCGCCCCTAGAACGCTTTGCGTCCCGACGCCCGCAGGTCCTCGCGGTGCGCACCGTTTGCGACTTGGTGAGTGTCTGGGTCGCCTCGCTCCCGGAAGAGTGCGGAGCTCTCCCTCGGGACGGTGGCAGCCTCGAGTGGTCCTGCAGGCGCCCTCACTTCGCCGTCGGGTG';
 		$('textarea').val(seq);
 		$('.info').fadeTo(200, 1);
 		$('.button--plot').click();

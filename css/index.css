@@ -89,6 +89,10 @@ main {
 	width: 100%;
 }
 
+ul {
+	list-style: none;
+}
+
 .column {
 	padding: 2rem 0;
 }
@@ -175,6 +179,20 @@ textarea:focus {
 	font-family: 'Rajdhani', sans-serif;
 	font-size: 2rem;
 	font-weight: 900;
+}
+
+.frequencies li {
+	margin-bottom: 1rem;
+}
+
+.frequency-bar {
+	background: #e36346;
+	height: 6px;
+}
+
+.frequency-bar--total {
+	background: #424d5c;
+	height: 6px;
 }
 
 footer {
