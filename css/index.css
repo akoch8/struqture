@@ -188,11 +188,11 @@ textarea:focus {
 .frequency-bar {
 	background: #e36346;
 	height: 6px;
+	margin: 0.5rem 0;
 }
 
 .frequency-bar--total {
 	background: #424d5c;
-	height: 6px;
 }
 
 footer {

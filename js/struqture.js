@@ -8,14 +8,14 @@ var calculateFrequencies = function(seq) {
 	var seqElements = seq.split('').filter(uniqueValues);
 	seqElements.sort();
 	frequencyList.append('<li>Sequence length = ' + seq.length +
-		'<div class="frequency-bar--total"></div></li>');
+		'<div class="frequency-bar frequency-bar--total"></div></li>');
 	var width = $('#nucleotide-frequencies').width();
 	$.each(seqElements, function(i, v) {
 		var re = new RegExp('[^' + v + ']', 'g');
 		var elCount = seq.replace(re, '').length;
 		var elFreq = Math.round(elCount / seq.length * 10000) / 100;
 		var elWidth = Math.round(elFreq / 100 * width);
-		frequencyList.append('<li>' + v + ': ' + elCount + '/' + seq.length + ' (' + elFreq +
+		frequencyList.append('<li>' + v + ': ' + elCount + ' / ' + seq.length + ' (' + elFreq +
 			'%)<div class="frequency-bar" style="width: ' + elWidth + 'px"></div></li>');
 	});
 };
