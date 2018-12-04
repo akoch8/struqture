@@ -7,7 +7,7 @@ var calculateFrequencies = function(seq) {
 	frequencyList.empty();
 	var seqElements = seq.split('').filter(uniqueValues);
 	seqElements.sort();
-	frequencyList.append('<li>Sequence length = ' + seq.length +
+	frequencyList.append('<li>Sequence length: ' + seq.length +
 		'<div class="frequency-bar frequency-bar--total"></div></li>');
 	var width = $('#nucleotide-frequencies').width();
 	$.each(seqElements, function(i, v) {
